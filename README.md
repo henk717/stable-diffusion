@@ -1,20 +1,27 @@
-# Easy Installer for Windows
-You will need administrator privileges for installing Miniconda and the setup script.
+# [Installation](https://github.com/hlky/stable-diffusion/wiki/Installation)
 
-1. Download and extract this repo.
-2. Download the model checkpoint. (e.g. from huggingface)
-3. Place the model into 'models\ldm\stable-diffusion-v1' and rename it to 'model.ckpt'.
-4. Download and install Miniconda 3 #**for all users.**
-```
-5. Run webui.cmd (if your environment is named ldo) or webuildm.cmd (if your environment is named ldm)
-```
+## [Development, testing, bleeding edge, maybe have bugs](https://github.com/hlky/stable-diffusion-webui)
 
-After installation has completed, you can open webui.cmd (if your environment is named ldo) or webuildm.cmd (if your environment is named ldm)
+### Have an **issue**? 
+* If the issue involves the **webUI** and you have the **stable version** from **_this repo_** create the issue on **_this repo_**
+* If the issue involves the **webUI** and you have the **development version** from **_[hlky/stable-diffusion-webui](https://github.com/hlky/stable-diffusion-webui)_** create the issue on **_[hlky/stable-diffusion-webui](https://github.com/hlky/stable-diffusion-webui)_**
+* If the issue involves _a bug_ in **textual-inversion** create the issue on **_[hlky/stable-diffusion-webui](https://github.com/hlky/stable-diffusion-webui)_**
+* If you want to know how to **activate** or **use** textual-inversion see **_[hlky/sd-enable-textual-inversion](https://github.com/hlky/sd-enable-textual-inversion)_**. Activation not working? create the issue on **_[hlky/stable-diffusion-webui](https://github.com/hlky/stable-diffusion-webui)_**
+* If the issue involves anything else create the issue on **_this repo_**
+
+## More documentation about features, troubleshooting, common issues very soon
+### Want to help with documentation? Documented something? Use [Discussions](https://github.com/hlky/stable-diffusion/discussions)
+
+## **Important**
+
+:warning: optimized img2img is not working right now, optimized version is txt2img only :warning: 
 
 🔥 NEW! webui.cmd updates with any changes in environment.yaml file so the environment will always be up to date as long as you get the new environment.yaml file 🔥
+
 :fire: no need to remove environment, delete src folder and create again, MUCH simpler! 🔥
 
-Legacy support: Only if your environment is named ldm "Launch Waifu Diffusion" to run the program anytime.
+
+--------------
 
 # Want to run full precision?
 Edit `scripts\relauncher.py`
@@ -22,8 +29,8 @@ Edit `scripts\relauncher.py`
 
 [Other cli arguments?](https://github.com/hlky/stable-diffusion#--help)
 
-
 --------------
+
 
 Features:
 

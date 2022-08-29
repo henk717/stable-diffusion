@@ -1,3 +1,5 @@
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/altryne/sd-webui-colab/blob/main/Stable_Diffusion_WebUi_Altryne.ipynb)
+
 # [Installation](https://github.com/hlky/stable-diffusion/wiki/Installation)
 
 ## [Development, testing, bleeding edge, maybe have bugs](https://github.com/hlky/stable-diffusion-webui)
@@ -14,20 +16,18 @@
 
 ## **Important**
 
-:warning: optimized img2img is not working right now, optimized version is txt2img only :warning: 
-
 🔥 NEW! webui.cmd updates with any changes in environment.yaml file so the environment will always be up to date as long as you get the new environment.yaml file 🔥
 
 :fire: no need to remove environment, delete src folder and create again, MUCH simpler! 🔥
 
 
+
+
 --------------
 
-# Want to run full precision?
-Edit `scripts\relauncher.py`
-`python scripts/webui.py` becomes `python scripts/webui.py --no-half --precision=full`
-
-[Other cli arguments?](https://github.com/hlky/stable-diffusion#--help)
+### Questions about **_[Upscalers](https://github.com/hlky/stable-diffusion-webui/wiki/Upscalers)_**?
+### Questions about **_[Optimized mode](https://github.com/hlky/stable-diffusion-webui/wiki/Optimized-mode)_**?
+### Questions about **_[Command line options](https://github.com/hlky/stable-diffusion-webui/wiki/Command-line-options)_**?
 
 --------------
 
@@ -59,7 +59,7 @@ Features:
 # Stable Diffusion web UI
 A browser interface based on Gradio library for Stable Diffusion.
 
-Original script with Gradio UI was written by a kind anonymopus user. This is a modification.
+Original script with Gradio UI was written by a kind anonymous user. This is a modification.
 
 ![](https://github.com/hlky/stable-diffusion-webui/blob/master/images/txt2img.jpg)
 ![](https://github.com/hlky/stable-diffusion-webui/blob/master/images/img2img.jpg)

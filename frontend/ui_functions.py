@@ -8,12 +8,22 @@ import re
 
 def change_image_editor_mode(choice, cropped_image, resize_mode, width, height):
     if choice == "Mask":
-        return [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True), gr.update(visible=True)]
-    return [gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)]
+        return [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=True)]
+    return [gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)]
 
 def update_image_mask(cropped_image, resize_mode, width, height):
     resized_cropped_image = resize_image(resize_mode, cropped_image, width, height) if cropped_image else None
     return gr.update(value=resized_cropped_image)
+
+def copy_img_to_lab(img):
+    try:
+        image_data = re.sub('^data:image/.+;base64,', '', img)
+        processed_image = Image.open(BytesIO(base64.b64decode(image_data)))
+        tab_update = gr.update(selected='imgproc_tab')
+        img_update = gr.update(value=processed_image)
+        return processed_image, tab_update
+    except IndexError:
+        return [None, None]
 
 def copy_img_to_input(img):
     try:
@@ -58,25 +68,18 @@ def copy_img_to_upscale_esrgan(img):
 
 help_text = """
     ## Mask/Crop
-    * The masking/cropping is very temperamental.
+    * Masking is not inpainting. You will probably get better results manually masking your images in photoshop instead.
+    * Built-in masking/cropping is very temperamental.
     * It may take some time for the image to show when switching from Crop to Mask.
     * If the image doesn't appear after switching to Mask, switch back to Crop and then back again to Mask
     * If the mask appears distorted (the brush is weirdly shaped instead of round), switch back to Crop and then back again to Mask.
 
     ## Advanced Editor
-    * For now the button needs to be clicked twice the first time.
-    * Once you have edited your image, you _need_ to click the save button for the next step to work.
-    * Clear the image from the crop editor (click the x)
-    * Click "Get Image from Advanced Editor" to get the image you saved. If it doesn't work, try opening the editor and saving again.
+    * Click 💾 Save to send your editor changes to the img2img workflow
+    * Click ❌ Clear to discard your editor changes
 
-    If it keeps not working, try switching modes again, switch tabs, clear the image or reload.
+    If anything breaks, try switching modes again, switch tabs, clear the image, or reload.
 """
-
-def show_help():
-    return [gr.update(visible=False), gr.update(visible=True), gr.update(value=help_text)]
-
-def hide_help():
-    return [gr.update(visible=True), gr.update(visible=False), gr.update(value="")]
 
 def resize_image(resize_mode, im, width, height):
     LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
@@ -90,7 +93,7 @@ def resize_image(resize_mode, im, width, height):
         src_h = height if ratio <= src_ratio else im.height * width // im.width
 
         resized = im.resize((src_w, src_h), resample=LANCZOS)
-        res = Image.new("RGB", (width, height))
+        res = Image.new("RGBA", (width, height))
         res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
     else:
         ratio = width / height
@@ -100,7 +103,7 @@ def resize_image(resize_mode, im, width, height):
         src_h = height if ratio >= src_ratio else im.height * width // im.width
 
         resized = im.resize((src_w, src_h), resample=LANCZOS)
-        res = Image.new("RGB", (width, height))
+        res = Image.new("RGBA", (width, height))
         res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
 
         if ratio < src_ratio:
@@ -113,3 +116,7 @@ def resize_image(resize_mode, im, width, height):
             res.paste(resized.resize((fill_width, height), box=(resized.width, 0, resized.width, height)), box=(fill_width + src_w, 0))
 
     return res
+
+def update_dimensions_info(width, height):
+    pixel_count_formated = "{:,.0f}".format(width * height)
+    return f"Aspect ratio: {round(width / height, 5)}\nTotal pixel count: {pixel_count_formated}"

@@ -1,67 +1,104 @@
+from os import path
+import json
+
+
+def readTextFile(*args):
+    dir = path.dirname(__file__)
+    entry = path.join(dir, *args)
+    with open(entry, "r", encoding="utf8") as f:
+        data = f.read()
+    return data
+
+
 def css(opt):
-    css_hide_progressbar = """
-    .wrap .m-12 svg { display:none!important; }
-    .wrap .m-12::before { content:"Loading..." }
-    .progress-bar { display:none!important; }
-    .meta-text { display:none!important; }
-    """
-    styling = """
+    styling = readTextFile("css", "styles.css")
+    # TODO: @altryne restore this before merge
+    if not opt.no_progressbar_hiding:
+         styling += readTextFile("css", "no_progress_bar.css")
+    return styling
+
+
+def js(opt):
+    data = readTextFile("js", "index.js")
+    data = "(z) => {" + data + "; return z ?? [] }"
+    return data
+
+
+
+def js_painterro_launch(to_id):
+    return w(f"Painterro.init('{to_id}')")
+
+def js_move_image(from_id, to_id):
+    return w(f"moveImageFromGallery('{from_id}', '{to_id}')")
+
+def js_copy_to_clipboard(from_id):
+    return w(f"copyImageFromGalleryToClipboard('{from_id}')")
+
+def js_img2img_submit(prompt_row_id):
+    return w(f"clickFirstVisibleButton('{prompt_row_id}')")
+
+# TODO : @altryne fix this to the new JS format
+js_copy_txt2img_output = "(x) => {navigator.clipboard.writeText(document.querySelector('gradio-app').shadowRoot.querySelector('#highlight .textfield').textContent.replace(/\s+/g,' ').replace(/: /g,':'))}"
+
+
+
+js_parse_prompt ="""
+(txt2img_prompt, txt2img_width, txt2img_height, txt2img_steps, txt2img_seed, txt2img_batch_count, txt2img_cfg) => {
     
-    [data-testid="image"] {min-height: 512px !important}
-    * #body>.col:nth-child(2){width:250%;max-width:89vw}
-
-    #prompt_input, #img2img_prompt_input { 
-        padding: 0px;
-        border: none;
-    }
-
-    #prompt_row input,
-    #prompt_row textarea {
-        font-size: 1.2rem;
-        line-height: 1.6rem;
-    }
-
-    #edit_mode_select{width:auto !important}
-
-    input[type=number]:disabled { -moz-appearance: textfield;+ }
-
-    #generate, #img2img_mask_btn, #img2img_edit_btn {
-        align-self: stretch;
-    }
-    """
-    return styling if opt.no_progressbar_hiding else styling + css_hide_progressbar
-
-# This is the code that finds which selected item the user has in the gallery
-js_part_getindex_txt2img="""
-const root = document.querySelector('gradio-app').shadowRoot;
-const getIndex = function(){
-const selected = root.querySelector('#txt2img_gallery_output .\\\\!ring-2');
-return selected ? [...selected.parentNode.children].indexOf(selected) : 0;
-};"""
-js_part_getindex_img2img="""
-const root = document.querySelector('gradio-app').shadowRoot;
-const getIndex = function(){
-    const selected = root.querySelector('#img2img_gallery_output .\\\\!ring-2');
-    return selected ? [...selected.parentNode.children].indexOf(selected) : 0;
-};"""
-js_part_clear_img2img="""
-root.querySelector('#img2img_editor .modify-upload button:last-child')?.click();
+const prompt_input = document.querySelector('gradio-app').shadowRoot.querySelector('#prompt_input [data-testid="textbox"]');
+const multiline = document.querySelector('gradio-app').shadowRoot.querySelector('#submit_on_enter label:nth-child(2)')
+if (prompt_input.scrollWidth > prompt_input.clientWidth + 10 ) {
+   multiline.click(); 
+}
 
 
+let height_match =  /(?:-h|-H|--height|height)[ :]?(?<height>\d+) /.exec(txt2img_prompt);
+if (height_match) {
+    txt2img_height = Math.round(height_match.groups.height / 64) * 64;
+    txt2img_prompt = txt2img_prompt.replace(height_match[0], '');
+}
+let width_match =  /(?:-w|-W|--width|width)[ :]?(?<width>\d+) /.exec(txt2img_prompt);
+if (width_match) {
+    txt2img_width = Math.round(width_match.groups.width / 64) * 64;
+    txt2img_prompt = txt2img_prompt.replace(width_match[0], '');
+}
+let steps_match =  /(?:-s|--steps|steps)[ :]?(?<steps>\d+) /.exec(txt2img_prompt);
+if (steps_match) {
+    txt2img_steps = steps_match.groups.steps.trim();
+    txt2img_prompt = txt2img_prompt.replace(steps_match[0], '');
+}
+let seed_match =  /(?:-S|--seed|seed)[ :]?(?<seed>\d+) /.exec(txt2img_prompt);
+if (seed_match) {
+    txt2img_seed = seed_match.groups.seed;
+    txt2img_prompt = txt2img_prompt.replace(seed_match[0], '');
+}
+let batch_count_match =  /(?:-n|-N|--number|number)[ :]?(?<batch_count>\d+) /.exec(txt2img_prompt);
+if (batch_count_match) {
+    txt2img_batch_count = batch_count_match.groups.batch_count;
+    txt2img_prompt = txt2img_prompt.replace(batch_count_match[0], '');
+}
+let cfg_scale_match =  /(?:-c|-C|--cfg-scale|cfg_scale|cfg)[ :]?(?<cfgscale>\d\.?\d+?) /.exec(txt2img_prompt);
+if (cfg_scale_match) {
+    txt2img_cfg = parseFloat(cfg_scale_match.groups.cfgscale).toFixed(1);
+    txt2img_prompt = txt2img_prompt.replace(cfg_scale_match[0], '');
+}
+let sampler_match =  /(?:-A|--sampler|sampler)[ :]?(?<sampler>\w+) /.exec(txt2img_prompt);
+if (sampler_match) {
+    
+    txt2img_prompt = txt2img_prompt.replace(sampler_match[0], '');
+}
+
+return [txt2img_prompt, parseInt(txt2img_width), parseInt(txt2img_height), parseInt(txt2img_steps), txt2img_seed, parseInt(txt2img_batch_count), parseFloat(txt2img_cfg)];
+}
 """
-js_return_selected_txt2img = "(x) => {" + js_part_getindex_txt2img + js_part_clear_img2img + """
-return [x[getIndex()].replace('data:;','data:image/png;')];
-}"""
-js_return_selected_img2img = "(x) => {" + js_part_getindex_img2img + js_part_clear_img2img + """
-return [x[getIndex()].replace('data:;','data:image/png;')];
-}"""
 
-js_part_copy_to_clipboard="""
-const data = x[getIndex()];
-const blob = await (await fetch(data.replace('data:;','data:image/png;'))).blob(); 
-const item = new ClipboardItem({'image/png': blob});
-navigator.clipboard.write([item]);
-return x;
-}"""
-js_copy_selected_txt2img = "async (x) => {" + js_part_getindex_txt2img + js_part_copy_to_clipboard
-js_copy_selected_img2img = "async (x) => {" + js_part_getindex_img2img + js_part_copy_to_clipboard
+
+# @altryne this came up as conflict, still needed or no?
+# Wrap the typical SD method call into async closure for ease of use
+# Supplies the js function with a params object
+# That includes all the passed arguments and input from Gradio: x
+# Example call in Gradio component's event handler (pass the result to _js arg):
+# _js=call_JS("myJsMethod", arg1="string", arg2=100, arg3=[])
+def call_JS(sd_method, **kwargs):
+    param_str = json.dumps(kwargs)
+    return f"async (x) => {{ return await SD.{sd_method}({{ x, ...{param_str} }}) ?? []; }}"
